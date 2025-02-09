@@ -1,0 +1,11 @@
+{
+  "name": "your-project-name",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "playwright": "^1.50.1"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.50.1"
+  }
+}
