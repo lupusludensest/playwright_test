@@ -3,28 +3,23 @@ const { test, expect } = require("@playwright/test");
 test("read Apocalypse Early Warning System dashboard values", async ({
   page,
 }) => {
-  await page.goto("https://ews.kylemcdonald.net/");
+  await page.goto("https://ews.kylemcdonald.net/", { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('p.summary-count-line, .summary-text-block', { timeout: 15000 });
 
   // Emergency level (e.g. "Emergency level 1 of 5")
-  const emergencyLevelBtn = page.locator(
-    "button[aria-label^='Emergency level']",
-  );
+  const emergencyLevelBtn = page.getByRole('button', { name: /Emergency level/i });
   await expect(emergencyLevelBtn).toBeVisible();
   const emergencyLevel = await emergencyLevelBtn.getAttribute("aria-label");
   console.log("Emergency level:", emergencyLevel);
 
-  // Planes airborne, e.g. "276/31,738 planes airborne"
-  const planesAirborne = page.locator(
-    "body > div:nth-child(1) > main:nth-child(2) > section:nth-child(2) > div:nth-child(2) > section:nth-child(1) > div:nth-child(2) > p:nth-child(1)",
-  );
+  // Planes airborne, e.g. "364/31,738 planes airborne"
+  const planesAirborne = page.getByText(/planes airborne/i).first();
   await expect(planesAirborne).toBeVisible();
   const planesAirborneText = await planesAirborne.innerText();
   console.log("Planes airborne:", planesAirborneText);
 
-  // Max people airborne, e.g. "3,434 max people airborne"
-  const maxPeopleAirborne = page.locator(
-    "p[title='Known capacities for 218 of 276 airborne aircraft; missing capacities are scaled by the known average.'] strong",
-  );
+  // Max people airborne, e.g. "4,036 max people airborne"
+  const maxPeopleAirborne = page.getByText(/max people airborne/i).first();
   await expect(maxPeopleAirborne).toBeVisible();
   const maxPeopleAirborneText = await maxPeopleAirborne.innerText();
   console.log("Max people airborne:", maxPeopleAirborneText);
