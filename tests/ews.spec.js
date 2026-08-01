@@ -1,5 +1,14 @@
 const { test, expect } = require("@playwright/test");
 
+const parseNumber = (text) => Number(text.replace(/[^0-9]/g, ""));
+
+const parsePlanesAirborne = (text) => {
+  const match = text.match(/^(\d+)[^\d]+/);
+  return match ? Number(match[1].replace(/,/g, "")) : parseNumber(text);
+};
+
+const formatAverage = (value) => Number(value.toFixed(1));
+
 test("read Apocalypse Early Warning System dashboard values", async ({
   page,
 }) => {
@@ -34,10 +43,15 @@ test("read Apocalypse Early Warning System dashboard values", async ({
   const lastUpdateText = await lastUpdate.innerText();
   console.log("Last update:", lastUpdateText);
 
+  const planesAirborneCount = parsePlanesAirborne(planesAirborneText);
+  const maxPeopleAirborneCount = parseNumber(maxPeopleAirborneText);
+  const averagePeoplePerJet = formatAverage(maxPeopleAirborneCount / planesAirborneCount);
+
   const summary = {
     emergencyLevel,
     planesAirborne: planesAirborneText,
     maxPeopleAirborne: maxPeopleAirborneText,
+    averagePeoplePerJet,
     deviation: deviationText,
     lastUpdate: lastUpdateText,
   };
