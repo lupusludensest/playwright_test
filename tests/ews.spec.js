@@ -9,6 +9,12 @@ const parsePlanesAirborne = (text) => {
 
 const formatAverage = (value) => Number(value.toFixed(1));
 
+test.afterEach(async ({ page }) => {
+  if (!page.isClosed()) {
+    await page.close();
+  }
+});
+
 test("read Apocalypse Early Warning System dashboard values", async ({
   page,
 }) => {
