@@ -1,10 +1,4 @@
-const { test, expect } = require('@playwright/test');
-
-test.afterEach(async ({ page }) => {
-  if (!page.isClosed()) {
-    await page.close();
-  }
-});
+const { test, expect } = require('./test-base');
 
 test('search Wikipedia for Stalin', async ({ page }) => {
   await page.goto('https://www.wikipedia.org/');

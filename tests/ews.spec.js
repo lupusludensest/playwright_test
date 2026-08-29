@@ -1,4 +1,4 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect } = require('./test-base');
 
 const parseNumber = (text) => Number(text.replace(/[^0-9]/g, ""));
 
@@ -8,12 +8,6 @@ const parsePlanesAirborne = (text) => {
 };
 
 const formatAverage = (value) => Number(value.toFixed(1));
-
-test.afterEach(async ({ page }) => {
-  if (!page.isClosed()) {
-    await page.close();
-  }
-});
 
 test("read Apocalypse Early Warning System dashboard values", async ({
   page,
