@@ -3,11 +3,12 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
+  fullyParallel: true,
   timeout: 60000,
   expect: {
     timeout: 15000,
   },
-  workers: 1,
+  workers: 4,
   use: {
     headless: true,
     ignoreHTTPSErrors: true,
@@ -40,6 +41,26 @@ module.exports = defineConfig({
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+    },
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'mobile-safari',
+      use: { ...devices['iPhone 12'] },
+    },
+    {
+      name: 'firefox-mobile',
+      use: {
+        browserName: 'firefox',
+        ...devices['Pixel 5'],
+        viewport: { width: 412, height: 844 },
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (Android 13; Mobile; rv:128.0) Gecko/128.0 Firefox/128.0',
+      },
     },
   ],
 });
