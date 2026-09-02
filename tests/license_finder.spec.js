@@ -127,6 +127,7 @@ test.describe('License Finder', () => {
       });
 
       await page.getByRole('button', { name: 'Sole proprietor' }).click();
+      await page.getByRole('button', { name: 'Continue' }).click();
 
       const continueButton = page.getByRole('button', { name: 'Continue' });
       await expect(continueButton).toBeDisabled();
