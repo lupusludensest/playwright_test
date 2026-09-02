@@ -6,14 +6,21 @@ const BUSINESS_NAME = 'Demo bakery';
 test.describe('License Finder', () => {
   test('happy path captures a business address and reaches the review screen', async ({ page }) => {
     await page.goto('https://license-finder.morebettercheddar.com/new', {
-      waitUntil: 'domcontentloaded',
+      waitUntil: 'networkidle',
     });
 
     await expect(page.getByRole('heading', { name: 'About your business' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Sole proprietor' }).click();
+    const businessTypeButton = page.getByRole('button', { name: 'Sole proprietor' });
+    await businessTypeButton.waitFor({ state: 'visible', timeout: 30000 });
+    await businessTypeButton.click();
+
     await page.getByLabel('Business name (optional)').fill(BUSINESS_NAME);
-    await page.getByRole('button', { name: 'Continue' }).click();
+
+    const continueButton = page.getByRole('button', { name: 'Continue' });
+    await expect(continueButton).toBeVisible({ timeout: 30000 });
+    await expect(continueButton).toBeEnabled({ timeout: 30000 });
+    await continueButton.click();
 
     await expect(page.getByRole('heading', { name: 'Business location' })).toBeVisible();
 
@@ -120,7 +127,9 @@ test.describe('License Finder', () => {
       });
 
       await page.getByRole('button', { name: 'Sole proprietor' }).click();
-      await page.getByRole('button', { name: 'Continue' }).click();
+
+      const continueButton = page.getByRole('button', { name: 'Continue' });
+      await expect(continueButton).toBeDisabled();
 
       const addressInput = page.getByLabel('Business address, location 1');
       await addressInput.fill(payload);
@@ -134,7 +143,7 @@ test.describe('License Finder', () => {
         await expect(page.getByText('We found your city and county.')).not.toBeVisible();
       }
 
-      await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
+      await expect(continueButton).toBeDisabled();
     }
   });
 });

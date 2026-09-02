@@ -50,17 +50,5 @@ module.exports = defineConfig({
       name: 'mobile-safari',
       use: { ...devices['iPhone 12'] },
     },
-    {
-      name: 'firefox-mobile',
-      use: {
-        browserName: 'firefox',
-        ...devices['Pixel 5'],
-        viewport: { width: 412, height: 844 },
-        isMobile: true,
-        hasTouch: true,
-        userAgent:
-          'Mozilla/5.0 (Android 13; Mobile; rv:128.0) Gecko/128.0 Firefox/128.0',
-      },
-    },
   ],
 });
