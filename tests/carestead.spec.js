@@ -50,39 +50,49 @@ test.describe('Carestead', () => {
     }
   });
 
-  test('opens the Carestead sign-in page', async ({ page }) => {
+  test('opens the Carestead sign-in page with the expected controls', async ({ page }) => {
     await page.goto(CARESTEAD_URL, { waitUntil: 'networkidle' });
 
     await Promise.all([
-      page.waitForURL('https://app.carestead.co/login'),
+      page.waitForURL(`${CARESTEAD_APP_URL}/login`),
       page.getByRole('link', { name: 'Sign in' }).first().click(),
     ]);
 
+    await expect(page).toHaveURL(`${CARESTEAD_APP_URL}/login`);
     await expect(page).toHaveTitle(/Carestead/);
     await expect(page.getByRole('heading', { name: 'Sign in to Carestead' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
+    await expect(page.getByLabel('Email')).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Create account' })).toHaveAttribute('href', '/signup');
   });
 
-  test('signs in with the configured credentials', async ({ page }) => {
+  test('rejects the configured credentials and remains on sign-in', async ({ page }) => {
     await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
 
-    await page.getByLabel('Email').fill(CARESTEAD_EMAIL);
-    await page.getByLabel('Password').fill(CARESTEAD_PASSWORD);
+    const emailInput = page.getByLabel('Email');
+    const passwordInput = page.getByLabel('Password');
+    await emailInput.fill(CARESTEAD_EMAIL);
+    await passwordInput.fill(CARESTEAD_PASSWORD);
+    await expect(emailInput).toHaveValue(CARESTEAD_EMAIL);
+    await expect(passwordInput).toHaveValue(CARESTEAD_PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
 
-    await Promise.race([
-      page.waitForURL(url => !url.pathname.endsWith('/login'), { timeout: 15000 }),
-      expect(page.locator('body')).toContainText(/invalid|incorrect|unable|error/i, { timeout: 15000 }),
-    ]);
+    await expect(page).toHaveURL(`${CARESTEAD_APP_URL}/login`);
+    await expect(page.getByText('Invalid email or password.')).toBeVisible();
   });
 
-  test('exposes Google-only account creation', async ({ page }) => {
+  test('confirms account creation is Google-only', async ({ page }) => {
     await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
     await page.getByRole('link', { name: 'Create account' }).click();
 
     await expect(page).toHaveURL(/\/signup$/);
+    await expect(page).toHaveURL(`${CARESTEAD_APP_URL}/signup`);
     await expect(page.getByRole('heading', { name: 'Create your Carestead account' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
     await expect(page.locator('input')).toHaveCount(0);
+    await expect(page.getByText(/Already have an account\? Sign in/)).toBeVisible();
   });
 
   test('opens the early-access form and validates required fields', async ({ page }) => {
