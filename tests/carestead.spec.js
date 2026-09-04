@@ -83,6 +83,60 @@ test.describe('Carestead', () => {
     await expect(page.getByText('Invalid email or password.')).toBeVisible();
   });
 
+  test('opens Google sign-in for the configured account', async ({ page }) => {
+    await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
+    await expect(page.getByRole('heading', { name: 'Sign in to Carestead' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Continue with Google' }).click();
+    await page.waitForLoadState('domcontentloaded');
+
+    await expect(page).toHaveURL(/accounts\.google\.com/);
+    const googleEmailInput = page.getByLabel('Email or phone');
+    await expect(googleEmailInput).toBeVisible();
+    await googleEmailInput.fill(CARESTEAD_EMAIL);
+    await expect(googleEmailInput).toHaveValue(CARESTEAD_EMAIL);
+
+    if (process.env.FREEZE_SCREEN === 'true') {
+      await page.pause();
+    }
+  });
+
+  test('verifies the authenticated dashboard after Google sign-in', async ({ page }) => {
+    test.skip(process.env.INTERACTIVE_LOGIN !== 'true', 'Run with INTERACTIVE_LOGIN=true for manual Google authentication.');
+
+    await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
+    await page.getByRole('button', { name: 'Continue with Google' }).click();
+    await page.waitForLoadState('domcontentloaded');
+
+    await expect(page).toHaveURL(/accounts\.google\.com/);
+    const googleEmailInput = page.getByLabel('Email or phone');
+    await expect(googleEmailInput).toBeVisible();
+    await googleEmailInput.fill(CARESTEAD_EMAIL);
+    await expect(googleEmailInput).toHaveValue(CARESTEAD_EMAIL);
+
+    await page.pause();
+
+    await page.waitForURL(new RegExp(`^${CARESTEAD_APP_URL.replace('.', '\\.')}`), {
+      timeout: 120000,
+    });
+    await expect(page.getByText(/Hi, .+/)).toBeVisible();
+    await expect(page.getByText('Today\'s Bible quiz')).toBeVisible();
+    await expect(page.getByText('Your flock')).toBeVisible();
+    await expect(page.getByText('Play together')).toBeVisible();
+    await expect(page.getByText('Your church')).toBeVisible();
+    await expect(page.getByText('Account')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Family' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Privacy' })).toBeVisible();
+    await expect(page.getByText('Sign out')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add a kid' }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: "Try today's quiz" })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start a game night' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Join with a code' })).toBeVisible();
+    await expect(page.getByText('Privacy & data')).toBeVisible();
+    await expect(page.getByText('Account security')).toBeVisible();
+  });
+
   test('confirms account creation is Google-only', async ({ page }) => {
     await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
     await page.getByRole('link', { name: 'Create account' }).click();
