@@ -68,7 +68,7 @@ test.describe('Carestead', () => {
     await expect(page.getByRole('link', { name: 'Create account' })).toHaveAttribute('href', '/signup');
   });
 
-  test('rejects the configured credentials and remains on sign-in', async ({ page }) => {
+  test('requires human verification before credential submission', async ({ page }) => {
     await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
 
     const emailInput = page.getByLabel('Email');
@@ -77,10 +77,8 @@ test.describe('Carestead', () => {
     await passwordInput.fill(CARESTEAD_PASSWORD);
     await expect(emailInput).toHaveValue(CARESTEAD_EMAIL);
     await expect(passwordInput).toHaveValue(CARESTEAD_PASSWORD);
-    await page.getByRole('button', { name: 'Sign in' }).click();
 
-    await expect(page).toHaveURL(`${CARESTEAD_APP_URL}/login`);
-    await expect(page.getByText('Invalid email or password.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in' })).toBeDisabled();
   });
 
   test('opens Google sign-in for the configured account', async ({ page }) => {
@@ -137,7 +135,7 @@ test.describe('Carestead', () => {
     await expect(page.getByText('Account security')).toBeVisible();
   });
 
-  test('confirms account creation is Google-only', async ({ page }) => {
+  test('offers Google and email account creation', async ({ page }) => {
     await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
     await page.getByRole('link', { name: 'Create account' }).click();
 
@@ -145,7 +143,9 @@ test.describe('Carestead', () => {
     await expect(page).toHaveURL(`${CARESTEAD_APP_URL}/signup`);
     await expect(page.getByRole('heading', { name: 'Create your Carestead account' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
-    await expect(page.locator('input')).toHaveCount(0);
+    await expect(page.getByLabel('Email')).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Create account with email' })).toBeVisible();
     await expect(page.getByText(/Already have an account\? Sign in/)).toBeVisible();
   });
 
