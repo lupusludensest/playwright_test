@@ -164,15 +164,24 @@ test.describe('Carestead', () => {
     await expect(page.locator('[name="church_name"]')).toHaveAttribute('required', '');
     await expect(page.locator('[name="contact_name"]')).toHaveAttribute('required', '');
     await expect(page.locator('[name="contact_email"]')).toHaveAttribute('required', '');
+    await expect(page.locator('[name="contact_phone"]')).toBeVisible();
+    await expect(page.locator('[name="church_city"]')).toBeVisible();
+    await expect(page.locator('[name="church_size"]')).toBeVisible();
+    await expect(page.locator('[name="website_url"]')).toBeVisible();
+    await expect(page.locator('[name="notes"]')).toBeVisible();
     expect(await page.locator('form').evaluate(form => form.checkValidity())).toBeFalsy();
 
-    await page.locator('[name="church_name"]').fill('Demo church');
-    await page.locator('[name="contact_name"]').fill('Test User');
-    await page.locator('[name="contact_email"]').fill('test@example.com');
-    await page.locator('[name="contact_phone"]').fill('555-0100');
-    await page.locator('[name="church_city"]').fill('Thousand Oaks');
-    await page.locator('[name="church_size"]').fill('about 150 on a Sunday');
-    await page.locator('[name="website_url"]').fill('https://example.com');
+    await page.locator('[name="church_name"]').fill('Red Cucumber');
+    await page.locator('[name="contact_name"]').fill('Test User Red Cucumber');
+    await page.locator('[name="contact_email"]').fill('gurov.vic@gmail.com');
+    await page.locator('[name="contact_phone"]').fill('4074354433');
+    await page.locator('[name="church_city"]').fill('Red Cucumber City');
+    await page.locator('[name="church_size"]').fill('About 150 on a Sunday');
+    await page.locator('[name="website_url"]').fill('https://www.linkedin.com/in/viacheslav-gurov/');
+    const additionalNotes = page.getByLabel('Anything else? (optional)', { exact: true });
+    await expect(additionalNotes).toBeVisible();
+    await additionalNotes.fill('Interested in learning more about Carestead.');
+    await expect(additionalNotes).toHaveValue('Interested in learning more about Carestead.');
 
     await expect(submitButton).toBeEnabled();
   });
