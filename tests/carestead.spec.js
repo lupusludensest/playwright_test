@@ -81,6 +81,49 @@ test.describe('Carestead', () => {
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeDisabled();
   });
 
+  test('masks the password input', async ({ page }) => {
+    await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
+
+    const passwordInput = page.getByLabel('Password');
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+    await passwordInput.fill(CARESTEAD_PASSWORD || 'test-password');
+    await expect(passwordInput).toHaveValue(CARESTEAD_PASSWORD || 'test-password');
+  });
+
+  test('logs out after 90 seconds of inactivity', async ({ page }) => {
+    test.skip(process.env.INTERACTIVE_LOGIN !== 'true', 'Set INTERACTIVE_LOGIN=true to run the 90-second session test.');
+    const loginTimeout = 120000;
+    const inactivityTimeout = 90000;
+    test.setTimeout(loginTimeout + inactivityTimeout + 30000);
+
+    await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
+
+    const emailInput = page.getByLabel('Email');
+    const passwordInput = page.getByLabel('Password');
+    const signInButton = page.getByRole('button', { name: 'Sign in' });
+
+    await emailInput.fill(CARESTEAD_EMAIL);
+    await passwordInput.fill(CARESTEAD_PASSWORD);
+    await expect(emailInput).toHaveValue(CARESTEAD_EMAIL);
+    await expect(passwordInput).toHaveValue(CARESTEAD_PASSWORD);
+
+    await expect(signInButton).toBeDisabled();
+    await page.pause();
+    await expect(signInButton).toBeEnabled({ timeout: loginTimeout });
+    await signInButton.click();
+    await page.waitForURL(url => url.origin === CARESTEAD_APP_URL && url.pathname !== '/login', {
+      timeout: loginTimeout,
+    });
+
+    await expect(page.getByText(`Hi, ${CARESTEAD_EMAIL}`)).toBeVisible();
+    await expect(page.getByText('Your family')).toBeVisible();
+    await expect(page.getByText("Today's Bible quiz")).toBeVisible();
+
+    await page.waitForTimeout(inactivityTimeout);
+    await expect(page, 'Expected the authenticated session to log out after 90 seconds of inactivity.')
+      .toHaveURL(`${CARESTEAD_APP_URL}/login`, { timeout: 15000 });
+  });
+
   test('opens Google sign-in for the configured account', async ({ page }) => {
     await page.goto(`${CARESTEAD_APP_URL}/login`, { waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { name: 'Sign in to Carestead' })).toBeVisible();
